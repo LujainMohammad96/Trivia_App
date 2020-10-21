@@ -35,112 +35,42 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     # """
-    def test_get_paginated_questions(self):
+
+    def test_retrieve_all_questions(self):
         response = self.client().get('/questions')
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(data['total_questions'])
-        self.assertTrue(len(data['questions']))
-        self.assertTrue(len(data['categories']))
-
-    def test_404_sent_request_beyond_valid_page(self):
-        response = self.client().get('/questions?page=1000', json = {})
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'resource not found')
-        
-
-    def test_delete_question(self):
-        new_question = Question(question='new question', answer='new answer', difficulty=1, category=1)
-        new_question.insert()
-        question_id = new_question.id
-
-        response = self.client().delete(f'/questions/{question_id}')
-        data = json.loads(response.data)
-
-        new_question = Question.query.filter(Question.id == new_question.id).one_or_none()
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertEqual(data['deleted'], question_id)
-        self.assertEqual(new_question, None)
-
-    def test_404_if_question_does_not_exist(self):
-        respone = self.client().get('/questions/grfegeg')
-        data = json.loads(respone.data)
-
-        self.assertEqual(respone.status_code, 404)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'resource not found')
-
-    def test_create_new_question(self):
-        new_question = {
-            'question': 'What is your name?',
-            'answer': 'My name is Lujain',
-            'difficulty': 1,
-            'category': 1
-        }
-        
-        questions = len(Question.query.all())
-        response = self.client().post('/questions', json=new_question)
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(data['created'])
-        self.assertTrue(len(data['questions']))
-
-    def test_405_if_question_creation_not_allowed(self):
-        new_question = {
-            'question': 'What is your name?',
-            'answer': 'My name is Lujain',
-            'category': 1
-        }
-
-        respone = self.client().post('/questions', json=new_question)
-        data = json.loads(respone.data)
-
-        self.assertEqual(respone.status_code, 405)
-        self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'method not allowed')
-
-    def test_get_question_search_with_result(self):
-        response = self.client().post('/questions', json={'search': 'Who discovered penicillin?'})
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(data['total_questions'])
-        self.assertTrue(len(data['questions']))
-
-    def test_get_question_search_without_result(self):
-        response = self.client().post('/questions', json={'search': 'any question that does not exist in db'})
-        data = json.loads(response.data)
-
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(data["success"], False)
-        self.assertEqual(data["message"], "resource not found")
+        self.assertTrue(data['questions'])
 
     def test_retrieve_all_categories(self):
         response = self.client().get('/categories')
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['success'], True)
-        self.assertTrue(len(data['categories']))
+        self.assertTrue(data['categories'])
 
-    def test_404_non_existing_category(self):
-        response = self.client().get('/categories/9999')
+    def test_does_not_insert_new_question(self):
+        new_question = {
+            'question': 'What is your name?',
+            'answer': 'My name is Lujain',
+            'category': 1,
+            'difficulty': 1
+        }
+        
+        response = self.client().post('/questions/', json=new_question)
+        data = json.loads(response.data)
+
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(data['success'], False)
+
+    def test_404_sent_reqeust_question_beyond_valid_page(self):
+        response = self.client().get('/questions?page=9000')
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
-
 
 
 # Make the tests conveniently executable
