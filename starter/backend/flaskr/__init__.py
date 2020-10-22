@@ -96,22 +96,15 @@ def create_app(test_config=None):
     try:
       question = Question.query.filter(Question.id == question_id).one_or_none()
 
-      if question is None:
-        abort(404)
-
       question.delete()
-      selection = question.query.order_by(Question.id).all()
-      current_questions = paginate_questions(request, selection)
 
       return jsonify({
         'success': True,
-        'deleted': question_id,
-        'questions': current_questions,
-        'total_questions': len(Question.query.all())
+        'deleted': question_id
       })
-    
     except:
-      abort(422)
+      abort(404)
+
   '''
   @TODO: 
   Create an endpoint to POST a new question, 
